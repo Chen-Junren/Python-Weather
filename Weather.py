@@ -97,7 +97,7 @@ def get_weather(city, code):
     temp_now = f"实时温度：{info_2_json['now']['temp']}℃\n"
     humidity = f"湿           度：{info_2_json['now']['humidity']}%\n"
     wind_direction = f"风           向：{info_2_json['now']['windDir']}\n"
-    wind_speed = f"风           力：{info_2_json['now']['windSpeed']}级\n"
+    wind_speed = f"风           力：{info_2_json['now']['windScale']}级\n"
     air_pollution = f"空气污染：{air_json['daily'][0]['category']}\n"
     weather = f"天           气：{info_2_json['now']['text']}\n"
     settings = read_settings()
@@ -238,7 +238,7 @@ class Weather(QWidget, Ui_Form):
         try:
             citycode = get_code(self.table, city)
         except KeyError:
-            logging.info(f"输入错误：{city}")
+            logging.warning(f"输入错误：{city}")
             err_msg = "输入错误"
         # logging.info(citycode)
         # logging.info(f"错误：{city}")
@@ -251,16 +251,16 @@ class Weather(QWidget, Ui_Form):
                 logging.info(f"查询:{city}-{citycode}\n[{info}]")
             except requests.ConnectionError:
                 err_msg = "网络错误"
-                logging.error(f"网络错误:{city} 请检查网络连接")
+                logging.warning(f"网络错误:{city} 请检查网络连接")
             except JSONDecodeError:
                 err_msg = "输入错误"
-                logging.error(f"输入错误:{city} 请检查输入")
+                logging.warning(f"输入错误 JSONDecodeError:{city} 请检查输入")
             except KeyError:
                 err_msg = "输入错误"
-                logging.error(f"输入错误:{city} 请检查输入")
+                logging.warning(f"输入错误 KeyError:{city} 请检查输入")
             except:
                 err_msg = "未知错误"
-                logging.error(traceback.format_exc())
+                logging.warning(traceback.format_exc())
         if not err_msg:
             self.lineEdit.setFocus()
             self.textEdit.setText(info)
