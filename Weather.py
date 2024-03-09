@@ -4,6 +4,8 @@
 # @Project : Weather
 # @Product : Pycharm v2022.3.3
 # @File    : Weather.py
+# @Edit    : 2024-3-9 9:56
+# @Version : V2.0
 import datetime
 import json
 import locale
@@ -119,10 +121,10 @@ def get_weather_1(city, code):
     air_json = air.json()
     warning = warning.json()
     if (
-        info_json["code"] == "401"
-        or info_2_json["code"] == "401"
-        or air_json["code"] == "401"
-        or warning["code"] == "401"
+            info_json["code"] == "401"
+            or info_2_json["code"] == "401"
+            or air_json["code"] == "401"
+            or warning["code"] == "401"
     ):
         return "KeyERR"
     global warnings
@@ -149,8 +151,8 @@ def get_weather_1(city, code):
                 warnings += f"{sender}{date1}发布{typ}{color}预警" + "\n"
             else:
                 warnings += (
-                    f"                           {sender}{date1}发布{typ}{color}预警"
-                    + "\n"
+                        f"                           {sender}{date1}发布{typ}{color}预警"
+                        + "\n"
                 )
     else:
         warnings = "预           警：暂无预警信息"
@@ -173,20 +175,39 @@ def get_weather_1(city, code):
         if settings.get(i) == 0:
             globals()[i] = ""
     return (
-        city
-        + date
-        + temp
-        + temp_now
-        + humidity
-        + wind_direction
-        + wind_speed
-        + air_pollution
-        + weather
-        + warnings
+            city
+            + date
+            + temp
+            + temp_now
+            + humidity
+            + wind_direction
+            + wind_speed
+            + air_pollution
+            + weather
+            + warnings
     )
 
 
 def get_weather_5(code2):
+    """
+    Get the 5-day weather forecast for a specific location.
+
+    Args:
+        code2: The location code for the desired weather forecast.
+
+    Returns:
+        A list of strings, each containing the weather information for a specific day.
+        Each string includes the following details:
+        - Date
+        - Weather condition
+        - Temperature range
+        - Humidity
+        - Wind direction
+        - Wind scale
+
+    Raises:
+        KeyError: If the API response does not contain the expected data.
+    """
     try:
         key = read_settings().get("key")
         html = f"https://devapi.qweather.com/v7/weather/7d?key={key}&location={code2}"
@@ -203,7 +224,7 @@ def get_weather_5(code2):
                 f"温度：{data['tempMax']}℃-{data['tempMin']}℃\n"
                 f"湿度：{data['humidity']}%\n"
                 f"风向：{data['windDirDay']}\n"
-                f"风力：{data['windScaleDay']}\n"
+                f"风力：{data['windScaleDay']}级\n"
             )
     except KeyError:
         return "KeyERR"
@@ -342,8 +363,16 @@ class AnotherWindow(QWidget):
     This "window" is a QWidget. If it has no parent, it
     will appear as a free-floating window as we want.
     """
-
     def __init__(self, city):
+        """
+            Initialize the AnotherWindow object.
+
+            Args:
+                city: The name of the city for which the weather information is displayed.
+
+            Returns:
+                None
+        """
         super().__init__()
         layout = QtWidgets.QHBoxLayout()
         self.setWindowTitle(f"五日天气 - {city}市")
@@ -474,12 +503,25 @@ class Weather(QWidget, Ui_Form):
         self.lineEdit.clear()
 
     def getWeather_5(self):
+        """
+            Perform a weather query based on user input.
+
+            Returns:
+                None
+
+            Raises:
+                KeyError: If there is an error with the user input.
+                requests.ConnectionError: If there is a network error.
+                JSONDecodeError: If there is an error decoding the JSON response.
+                Exception: If there is an unknown error.
+
+        """
         city = self.lineEdit.text()
         err_msg = ""
         logging.info(f"输入：{city}")
         try:
             citycode = get_code(self.table, city)
-            #print(citycode, city)
+            # print(citycode, city)
         except KeyError:
             logging.warning(f"输入错误：{city}")
             err_msg = "输入错误"
@@ -511,7 +553,7 @@ class Weather(QWidget, Ui_Form):
             except Exception as e:
                 err_msg = "未知错误"
                 logging.warning(repr(e))
-
+                self.lineEdit.setText(repr(e))
         self.lineEdit.setFocus()
         if not err_msg:
             self.w = AnotherWindow(city)
