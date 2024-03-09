@@ -4,8 +4,6 @@
 # @Project : Weather
 # @Product : Pycharm v2022.3.3
 # @File    : Weather.py
-# @Edit    : 2024-3-9 9:56
-# @Version : V2.0
 import datetime
 import json
 import locale
@@ -377,33 +375,29 @@ class AnotherWindow(QWidget):
         layout = QtWidgets.QHBoxLayout()
         self.setWindowTitle(f"五日天气 - {city}市")
         self.setLayout(layout)
+        self.setFixedSize(800, 400)
         self.resize(800, 400)
         self.setWindowIcon(QtGui.QIcon("Weather.png"))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setFamily("荆南麦圆体")
         self.setFont(font)
-
         self.label = QtWidgets.QLabel()
         layout.addWidget(self.label)
         self.label.setText(info[0])
         self.label.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
-
         self.label1 = QtWidgets.QLabel()
         layout.addWidget(self.label1)
         self.label1.setText(info[1])
         self.label1.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
-
         self.label2 = QtWidgets.QLabel()
         layout.addWidget(self.label2)
         self.label2.setText(info[2])
         self.label2.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
-
         self.label3 = QtWidgets.QLabel()
         layout.addWidget(self.label3)
         self.label3.setText(info[3])
         self.label3.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
-
         self.label4 = QtWidgets.QLabel()
         layout.addWidget(self.label4)
         self.label4.setText(info[4])
@@ -435,6 +429,7 @@ class Weather(QWidget, Ui_Form):
         super(Weather, self).__init__(parent)
         self.setupUi(self)
         self.InitializeUi()
+        self.setFixedSize(600, 500)
 
     def InitializeUi(self):
         """
@@ -515,6 +510,9 @@ class Weather(QWidget, Ui_Form):
                 JSONDecodeError: If there is an error decoding the JSON response.
                 Exception: If there is an unknown error.
 
+            Examples:
+                This function is typically called when the user wants to query the weather.
+                It retrieves the user input, performs a weather query, and displays the result.
         """
         city = self.lineEdit.text()
         err_msg = ""
