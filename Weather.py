@@ -35,7 +35,7 @@ logging.basicConfig(
 )
 
 
-def read_settings(filename="settings.txt"):
+def read_settings(filename: str = "settings.txt") -> dict:
     """
     Reads settings from a file and returns them as a dictionary.
 
@@ -51,7 +51,7 @@ def read_settings(filename="settings.txt"):
     return setting
 
 
-def read_code(filename="city_code.txt"):
+def read_code(filename: str = "city_code.txt") -> str:
     """
     Reads city codes from a file and returns them as a dictionary.
 
@@ -67,7 +67,7 @@ def read_code(filename="city_code.txt"):
     return city_code
 
 
-def get_code(table, city):
+def get_code(table: any, city: str) -> str:
     """
     Retrieves the code for a specific city from a table.
 
@@ -82,7 +82,7 @@ def get_code(table, city):
     return table[city]
 
 
-def get_weather_1(city, code):
+def get_weather_1(city: str, code: str) -> str | list:
     """
     Retrieves weather information for a specific city.
 
@@ -186,7 +186,7 @@ def get_weather_1(city, code):
     )
 
 
-def get_weather_5(code2):
+def get_weather_5(code2: str) -> list | str:
     """
     Get the 5-day weather forecast for a specific location.
 
@@ -361,6 +361,7 @@ class AnotherWindow(QWidget):
     This "window" is a QWidget. If it has no parent, it
     will appear as a free-floating window as we want.
     """
+
     def __init__(self, city):
         """
             Initialize the AnotherWindow object.
