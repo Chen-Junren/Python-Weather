@@ -12,6 +12,7 @@ import os
 import sys
 import time
 import traceback
+import webbrowser
 from json import JSONDecodeError
 
 import requests
@@ -90,6 +91,24 @@ def get_code(table, city):
     return table[city]
 
 
+def URL(url: str):
+    """
+    Open the url in browser.
+    :param url: The url.
+    :return:
+    """
+    webbrowser.open(url)
+
+
+def Open(file: str):
+    """
+    Open the file.
+    :param file: The path of the file.
+    :return: None
+    """
+    os.system(file)
+
+
 def get_weather_1(city: str, code: str, dates: QtCore.QDate):
     """
     Retrieves weather information for a specific city.
@@ -97,6 +116,7 @@ def get_weather_1(city: str, code: str, dates: QtCore.QDate):
     Args:
         city: The name of the city.
         code: The code of the city.
+        dates: The date user chose
 
     Returns:
         str: The weather information for the city.
@@ -115,8 +135,6 @@ def get_weather_1(city: str, code: str, dates: QtCore.QDate):
     warning = f"https://devapi.qweather.com/v7/warning/now?key={key}&location={code}"
     info = requests.get(html)
     info.encoding = "utf-8"
-    # info2 = requests.get(hef)
-    # info2.encoding = "utf-8"
     air = requests.get(air)
     air.encoding = "utf-8"
     warning = requests.get(warning)
@@ -216,7 +234,7 @@ def get_weather_1(city: str, code: str, dates: QtCore.QDate):
     ]
 
 
-def get_weather_5(code2):
+def get_weather_5(code2: str):
     """
     Get the 5-day weather forecast for a specific location.
 
@@ -320,6 +338,8 @@ class Ui_Form(object):
         self.verticalLayout_2.addWidget(self.pushButton_3)
         self.pushButton_4 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_4.setObjectName("pushButton_4")
+
+        self.pushButton_4.clicked.connect(Form.openHelp)
         self.verticalLayout_2.addWidget(self.pushButton_4)
         self.pushButton_2 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         font = QtGui.QFont()
@@ -363,7 +383,7 @@ class FiveDays(QWidget):
     will appear as a free-floating window as we want.
     """
 
-    def __init__(self, city):
+    def __init__(self, city, infos):
         """
         Initialize the AnotherWindow object.
 
@@ -386,23 +406,23 @@ class FiveDays(QWidget):
         self.setFont(font)
         self.label = QtWidgets.QLabel()
         layout.addWidget(self.label)
-        self.label.setText(info[0])
+        self.label.setText(infos[0])
         self.label.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
         self.label1 = QtWidgets.QLabel()
         layout.addWidget(self.label1)
-        self.label1.setText(info[1])
+        self.label1.setText(infos[1])
         self.label1.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
         self.label2 = QtWidgets.QLabel()
         layout.addWidget(self.label2)
-        self.label2.setText(info[2])
+        self.label2.setText(infos[2])
         self.label2.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
         self.label3 = QtWidgets.QLabel()
         layout.addWidget(self.label3)
-        self.label3.setText(info[3])
+        self.label3.setText(infos[3])
         self.label3.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
         self.label4 = QtWidgets.QLabel()
         layout.addWidget(self.label4)
-        self.label4.setText(info[4])
+        self.label4.setText(infos[4])
         self.label4.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
 
 
@@ -446,6 +466,56 @@ class OneDay(QWidget):
         self.label1 = QtWidgets.QLabel()
 
 
+class Helps(QWidget):
+    """
+    This "window" is a QWidget. If it has no parent, it
+    will appear as a free-floating window as we want.
+    """
+
+    def __init__(self):
+        """
+        Initialize the AnotherWindow object.
+
+        Args:
+
+
+        Returns:
+            None
+        """
+        super().__init__()
+        layout = QtWidgets.QGridLayout()
+        self.setWindowTitle(f"帮助")
+        self.setLayout(layout)
+        self.setFixedSize(600, 400)
+        self.resize(600, 400)
+        self.setWindowIcon(QtGui.QIcon("Weather.png"))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setFamily("荆南麦圆体")
+        self.setFont(font)
+        self.label = QtWidgets.QLabel()
+        self.label.setAlignment(QtCore.Qt.AlignCenter | Qt.AlignVCenter)
+
+        layout.addWidget(self.label)
+        self.label.setText(
+            "请先输入城市再查询\n按按钮查询天气\n按回车查询单日天气\n按I键打开该页面\n按S键最小化窗口"
+        )
+
+        self.pushButton_5 = QtWidgets.QPushButton()
+        self.pushButton_5.setFixedSize(160, 60)
+        layout.addWidget(self.pushButton_5)
+        self.pushButton_5.setText("前往Github")
+        self.pushButton_5.clicked.connect(
+            lambda: URL("https://github.com/Chen-Junren/Python-Weather")
+        )
+
+        self.pushButton_6 = QtWidgets.QPushButton()
+        self.pushButton_6.setFixedSize(160, 60)
+        layout.addWidget(self.pushButton_6)
+        self.pushButton_6.setText("打开设置文件")
+        self.pushButton_6.clicked.connect(lambda: Open(".\\settings.txt"))
+
+
 class Weather(QWidget, Ui_Form):
     """
     Represents a weather application that allows users to retrieve weather information for a specific city.
@@ -484,6 +554,10 @@ class Weather(QWidget, Ui_Form):
         self.table = read_code()
         # self.textEdit.setReadOnly(True)
         self.lineEdit.setFocus()
+
+    def openHelp(self):
+        self.helps = Helps()
+        self.helps.show()
 
     def getWeather_1(self):
         """
@@ -579,15 +653,15 @@ class Weather(QWidget, Ui_Form):
         self.label_3.setText("正在查询中...")
         if not err_msg:
             try:
-                global info
+                # global info
                 logging.info(f"查询：{city}-{citycode}")
-                info = get_weather_5(citycode)
-                if info == "KeyERR":
+                FiveD = get_weather_5(citycode)
+                if FiveD == "KeyERR":
                     err_msg = "设置错误"
                     logging.warning(
                         f"设置错误：请检查Key:[{read_settings()['key']}]是否正确"
                     )
-                logging.info(f"查询:{city}-{citycode}\n[{info}]")
+                logging.info(f"查询:{city}-{citycode}\n[{FiveD}]")
                 logging.info(f"当前设置:{read_settings()}")
             except requests.ConnectionError:
                 err_msg = "网络错误"
@@ -604,7 +678,7 @@ class Weather(QWidget, Ui_Form):
                 self.lineEdit.setText(repr(e))
         self.lineEdit.setFocus()
         if not err_msg:
-            self.w = FiveDays(city)
+            self.w = FiveDays(city, infos=FiveD)
             self.w.show()
             # self.textEdit.setText()
             self.label_3.setText("查询成功")
@@ -625,16 +699,19 @@ class Weather(QWidget, Ui_Form):
             None
 
         """
-        if e.key() == Qt.Key_Return:
+        if e.key() == Qt.Key_1:
             self.getWeather_1()
-        if e.key() == Qt.Key_R:
-            self.label_3.setText("打开设置文件")
-            os.system(".\\settings.txt")
-            logging.info("打开设置文件")
+        if e.key() == Qt.Key_5:
+            self.getWeather_5()
+        if e.key() == Qt.Key_S:
+            self.showMinimized()
+        # if e.key() == Qt.Key_R:
+        #    self.label_3.setText("打开设置文件")
+        #    os.system(".\\settings.txt")
+        #    logging.info("打开设置文件")
         if e.key() == Qt.Key_I:
-            self.label_3.setText(
-                "请先输入城市再查询\n按回车或单击按钮查询\n按R键打开设置文件\n按I键显示此页面"
-            )
+            self.help1 = Helps()
+            self.help1.show()
             logging.info("显示帮助")
 
 
