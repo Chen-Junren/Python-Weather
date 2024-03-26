@@ -1,11 +1,23 @@
 # Python-Weather
-An application using the Python language that supports users in checking the weather for cities in China and Chinese Taiwan.
+一个使用Python编写的天气查询程序，支持用户查询全国3240个城市
 
-## How to Use:
-1. Download and unzip the package.
-2. Edit the "settings.txt" in the root directory. Remember to change the string of "key". 
-3. Go to [https://dev.qweather.com/](https://dev.qweather.com/) and sign up an account.
-4. Go to [https://console.qweather.com/#/apps](https://console.qweather.com/#/apps) and create a project. Each account has one free project. 
-5. Go back to the above link, and get your key. Put it into settings.txt.
+## 如何使用
+1. 下载并解压软件
+2. 编辑根目录下的"settings.txt"，**必须更改"key"字段**
+   1. 前往[https://dev.qweather.com/](https://dev.qweather.com/)并注册一个账号(或登录)
+   2. 前往[https://console.qweather.com/#/apps](https://console.qweather.com/#/apps)并创建一个项目。**每个用户都有一个免费项目的余额。**
+3. 得到你的Key，将其输入"settings.txt"文件中
+4. 打开应用开始使用
 
-If the font does not display properly, download the otf file from the source code and install it.
+## Q&A
+
+~~~
+Q: 字体未正确显示？
+
+A: 安装压缩包中的otf字体文件。
+~~~
+~~~
+Q: Windows7无法打开？
+
+A: 前往[ISSUE 3](https://github.com/Chen-Junren/Python-Weather/issues/3)
+~~~
