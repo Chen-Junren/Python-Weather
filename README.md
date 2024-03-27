@@ -19,5 +19,5 @@ A: 安装压缩包中的otf字体文件。
 ~~~
 Q: Windows7无法打开？
 
-A: 前往[ISSUE 3](https://github.com/Chen-Junren/Python-Weather/issues/3)
+A: 前往ISSUE 3
 ~~~
