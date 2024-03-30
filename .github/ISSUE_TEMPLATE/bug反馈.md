@@ -1,9 +1,9 @@
 ---
 name: Bug反馈
 about: 告诉我们发生了什么错误
-title: ''
+title: "[BUG]"
 labels: bug
-assignees: ''
+assignees: Chen-Junren
 
 ---
 
@@ -17,10 +17,10 @@ assignees: ''
 
 #### 如何重现问题
 _把你遇到的问题的发生步骤替换掉下面的内容_
-Go to '...'
-Click on '....'
-Scroll down to '....'
-See error
+前往 '...'
+点击 '....'
+滑动 '....'
+复现错误
 
 ---
 
