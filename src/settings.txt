@@ -1,1 +1,1 @@
-{"CheckTime": 0, "date": 1, "temp": 1, "temp_now": 1, "humidity": 1, "wind_direction": 1, "wind_speed": 1, "weather": 1, "warnings": 1, "key": "Put In Your Key"}
+{"CheckTime": 1, "date": 1, "temp": 1, "temp_now": 1, "humidity": 1, "wind_direction": 1, "wind_speed": 1, "weather": 1, "warnings": 1, "key": "Put In Your Key"}
