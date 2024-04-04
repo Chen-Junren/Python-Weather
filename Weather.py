@@ -1,24 +1,28 @@
-# -*- coding: UTF-8 -*-
-# Copyright (C) 2024 Chen Junren, Inc. All Rights Reserved
-# @Author  : Chen Junren
-# @Project : Weather
-# @Product : Pycharm v2022.3.3
-# @File    : Weather.py
+"""
+-*- coding: UTF-8 -*-
+Copyright (C) 2024 Chen Junren, Inc. All Rights Reserved
+@Author  : Chen Junren
+@Project : Weather
+@Product : Pycharm v2022.3.3
+@File    : Weather.py
+"""
+
 import datetime
 import json
-import locale
 import logging
 import os
 import sys
 import time
+import traceback
+import webbrowser
 from json import JSONDecodeError
-
+import pyperclip
 import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QApplication
 
-locale.setlocale(locale.LC_CTYPE, "Chinese")
+
 if not os.path.exists("./log"):
     os.mkdir("log")
 current_date = (
@@ -35,12 +39,12 @@ logging.basicConfig(
 )
 
 
-def read_settings(filename: str = "settings.txt") -> dict:
+def read_settings(filename="./src/settings.txt"):
     """
     Reads settings from a file and returns them as a dictionary.
 
     Args:
-        filename: The name of the file to read the settings from (default: "settings.txt").
+        filename: The name of the file to read the settings from (default: "./src/settings.txt").
 
     Returns:
         dict: A dictionary containing the settings.
@@ -51,12 +55,12 @@ def read_settings(filename: str = "settings.txt") -> dict:
     return setting
 
 
-def read_code(filename: str = "city_code.txt") -> str:
+def read_code(filename="./src/city_code.txt"):
     """
     Reads city codes from a file and returns them as a dictionary.
 
     Args:
-        filename: The name of the file to read the city codes from (default: "city_code.txt").
+        filename: The name of the file to read the city codes from (default: "./src/city_code.txt").
 
     Returns:
         dict: A dictionary containing city codes.
@@ -67,7 +71,7 @@ def read_code(filename: str = "city_code.txt") -> str:
     return city_code
 
 
-def get_code(table: any, city: str) -> str:
+def get_code(table, city):
     """
     Retrieves the code for a specific city from a table.
 
@@ -82,13 +86,43 @@ def get_code(table: any, city: str) -> str:
     return table[city]
 
 
-def get_weather_1(city: str, code: str) -> str | list:
+def URL(url: str) -> None:
+    """
+    Open the url in browser.
+    :param url: The url.
+    :return:
+    """
+    webbrowser.open(url)
+
+
+def copy(self, text: str) -> None:
+    """
+    Copy the text
+    :param self: Ui Form
+    :param text: Text to copy
+    :return:  None
+    """
+    pyperclip.copy(text)
+    self.pushButton.setText("复制成功")
+
+
+def Open(file: str) -> None:
+    """
+    Open the file.
+    :param file: The path of the file.
+    :return: None
+    """
+    os.system(file)
+
+
+def get_weather_1(city: str, code: str, dates: QtCore.QDate):
     """
     Retrieves weather information for a specific city.
 
     Args:
         city: The name of the city.
         code: The code of the city.
+        dates: The date user chose
 
     Returns:
         str: The weather information for the city.
@@ -101,33 +135,27 @@ def get_weather_1(city: str, code: str) -> str | list:
     """
     global key
     key = read_settings().get("key")
-    html = f"https://devapi.qweather.com/v7/weather/3d?key={key}&location={code}"
-    hef = f"https://devapi.qweather.com/v7/weather/now?key={key}&location={code}"
+    html = f"https://devapi.qweather.com/v7/weather/7d?key={key}&location={code}"
     air = f"https://devapi.qweather.com/v7/air/5d?key={key}&location={code}"
     warning = f"https://devapi.qweather.com/v7/warning/now?key={key}&location={code}"
     info = requests.get(html)
     info.encoding = "utf-8"
-    info2 = requests.get(hef)
-    info2.encoding = "utf-8"
     air = requests.get(air)
     air.encoding = "utf-8"
     warning = requests.get(warning)
     warning.encoding = "utf-8"
-    # logging.info(info,info2,air,warning)
     info_json = info.json()
-    info_2_json = info2.json()
     air_json = air.json()
     warning = warning.json()
     if (
-            info_json["code"] == "401"
-            or info_2_json["code"] == "401"
-            or air_json["code"] == "401"
-            or warning["code"] == "401"
+        info_json["code"] == "401"
+        or air_json["code"] == "401"
+        or warning["code"] == "401"
     ):
         return "KeyERR"
     global warnings
     warn = warning["warning"]
-    warnings = "预           警："
+    warnings = "预         警："
     if warn:
         for i, x in enumerate(warn):
             sender = warn[i]["sender"]
@@ -138,55 +166,150 @@ def get_weather_1(city: str, code: str) -> str | list:
             color_li = {
                 "Green": "绿色",
                 "White": "白色",
-                "Blue": "白色",
+                "Blue": "蓝色",
                 "Yellow": "黄色",
                 "Orange": "橙色",
                 "Red": "红色",
                 "Black": "黑色",
             }
+
             color = color_li.get(warn[i]["severityColor"])
-            if warnings == "预           警：":
+            if warnings == "预         警：":
                 warnings += f"{sender}{date1}发布{typ}{color}预警" + "\n"
             else:
                 warnings += (
-                        f"                           {sender}{date1}发布{typ}{color}预警"
-                        + "\n"
+                    f"                           {sender}{date1}发布{typ}{color}预警"
+                    + "\n"
                 )
     else:
-        warnings = "预           警：暂无预警信息"
+        warnings = "预         警：暂无预警信息"
+    dated = str(dates)[19:-1].replace(", ", "-")
+    dated = str(datetime.datetime.strptime(dated, "%Y-%m-%d"))[:-9]
 
-    global date, temp, temp_now, humidity, wind_direction, wind_speed, air_pollution, weather, settings
+    global date, temp, temp_now, humidity, wind_direction, wind_speed, air_pollution, weather, settings, listed
     city += "\n"
-    date = f"日           期：{info_json['daily'][0]['fxDate']}\n"
+    we_listed = {}
+    for i in info_json["daily"]:
+        if i["fxDate"] == dated:
+            we_listed = i
+
+    date = f"日         期：{we_listed['fxDate']}\n"
     temp = (
-        f"温           度：最高温{info_json['daily'][0]['tempMax']}℃ \n"
-        f"                           最低温{info_json['daily'][0]['tempMin']}℃\n"
+        f"温         度：最高温{we_listed['tempMax']}℃ \n"
+        f"                      最低温{we_listed['tempMin']}℃\n"
     )
-    temp_now = f"实时温度：{info_2_json['now']['temp']}℃\n"
-    humidity = f"湿           度：{info_2_json['now']['humidity']}%\n"
-    wind_direction = f"风           向：{info_2_json['now']['windDir']}\n"
-    wind_speed = f"风           力：{info_2_json['now']['windScale']}级\n"
-    air_pollution = f"空气污染：{air_json['daily'][0]['category']}\n"
-    weather = f"天           气：{info_2_json['now']['text']}\n"
-    settings = read_settings()
+    humidity = f"湿         度：{we_listed['humidity']}%\n"
+    wind_direction = f"风         向：{we_listed['windDirDay']}\n"
+    wind_speed = f"风         力：{we_listed['windScaleDay']}级\n"
+    air_listed = {}
+    for i in air_json["daily"]:
+        if i["fxDate"] == dated:
+            air_listed = i
+    try:
+        air_pollution = f"空气污染：{air_listed['category']}\n"
+    except KeyError:
+        air_pollution = ""
+    weather = f"天         气：{we_listed['textDay']}\n"
+    settings = read_settings()["one"]
     for i in settings:
         if settings.get(i) == 0:
             globals()[i] = ""
-    return (
+    return [
+        (
             city
             + date
             + temp
-            + temp_now
             + humidity
             + wind_direction
             + wind_speed
             + air_pollution
             + weather
             + warnings
-    )
+        ),
+        dated,
+    ]
 
 
-def get_weather_5(code2: str) -> list | str:
+def get_weather_now(code: str):
+    try:
+        key = read_settings().get("key")
+        html = f"https://devapi.qweather.com/v7/weather/now?key={key}&location={code}"
+        air = f"https://devapi.qweather.com/airquality/v1/now/{code}?key={key}"
+        warn = f"https://devapi.qweather.com/v7/warning/now?key={key}&location={code}"
+        info = requests.get(html)
+        air_info = requests.get(air)
+        warn_info = requests.get(warn)
+        info.encoding = "utf-8"
+        air_info.encoding = "utf-8"
+        warn_info.encoding = "utf-8"
+        air_json = air_info.json()
+        info_json = info.json()
+        warn_json = warn_info.json()
+        print(info_json)
+        info_now = info_json["now"]
+        warn_data = warn_json["warning"]
+        warning = "预警信息："
+        if warn_data:
+            for i, x in enumerate(warn_data):
+                sender = warn_data[i]["sender"]
+                date1 = datetime.datetime.strptime(
+                    warn_data[i]["pubTime"], "%Y-%m-%dT%H:%M+08:00"
+                ).strftime("%Y年%m月%d日%H时%M分")
+                typ = warn_data[i]["typeName"]
+                color_li = {
+                    "Green": "绿色",
+                    "White": "白色",
+                    "Blue": "蓝色",
+                    "Yellow": "黄色",
+                    "Orange": "橙色",
+                    "Red": "红色",
+                    "Black": "黑色",
+                }
+
+                color = color_li.get(warn_data[i]["severityColor"])
+                if warning == "预警信息：":
+                    warning += f"{sender}{date1}发布{typ}{color}预警" + "\n"
+                else:
+                    warning += (
+                        f"                           {sender}{date1}发布{typ}{color}预警"
+                        + "\n"
+                    )
+        else:
+            warning = "预警信息：暂无预警信息"
+
+        global time_now, weather_now, temp_now, humidity_now, wind_direction_now, wind_speed_now, air_now, warnings_now
+        time_temp = datetime.datetime.strptime(
+            info_json["updateTime"], "%Y-%m-%dT%H:%M+08:00"
+        ).strftime("%Y年%m月%d日%H时%M分")
+        time_now = f"更新时间：{time_temp}\n"
+        weather_now = f"实时天气：{info_now['text']}\n"
+        temp_now = f"实时温度：{info_now['temp']}℃\n"
+        humidity_now = f"实时湿度：{info_now['humidity']}%\n"
+        wind_direction_now = f"实时风向：{info_now['windDir']}\n"
+        wind_speed_now = f"实时风力：{info_now['windScale']}级\n"
+        air_now = f"空气质量：{air_json['aqi'][1]['category']}\n"
+        warnings_now = f"{warning}\n"
+        setting_now = read_settings()["now"]
+        for i in setting_now:
+            if setting_now.get(i) == 0:
+                globals()[f"{i}_now"] = ""
+        temporary = (
+            time_now
+            + weather_now
+            + temp_now
+            + humidity_now
+            + wind_direction_now
+            + wind_speed_now
+            + air_now
+            + warnings_now
+        )
+
+    except KeyError:
+        return "KeyERR"
+    return temporary
+
+
+def get_weather_5(code2: str):
     """
     Get the 5-day weather forecast for a specific location.
 
@@ -231,42 +354,25 @@ def get_weather_5(code2: str) -> list | str:
 
 class Ui_Form(object):
     """
-    Represents the user interface of the weather application.
-
-    Methods:
-       setupUi: Sets up the UI elements of the weather application.
-       retranslateUi: Translates the text of the UI elements in the weather application.
-
+    The Main Window.
     """
 
     def setupUi(self, Form):
         """
-        Sets up the UI elements of the weather application.
-
-        Args:
-            Form: The form widget.
-
-        Returns:
-            None
-
+        Set up UI.
+        :param Form:
+        :return:
         """
-
         Form.setObjectName("Form")
-        Form.resize(600, 500)
+        Form.resize(600, 480)
         font = QtGui.QFont()
         font.setFamily("荆南麦圆体")
         Form.setFont(font)
         Form.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
-        self.textEdit = QtWidgets.QTextEdit(Form)
-        self.textEdit.setGeometry(QtCore.QRect(80, 140, 431, 231))
-        font = QtGui.QFont()
-        font.setFamily("荆南麦圆体")
-        font.setPointSize(10)
-        self.textEdit.setFont(font)
-        self.textEdit.setObjectName("textEdit")
         self.layoutWidget = QtWidgets.QWidget(Form)
-        self.layoutWidget.setGeometry(QtCore.QRect(80, 70, 122, 62))
+        self.layoutWidget.setGeometry(QtCore.QRect(50, 70, 300, 60))
         self.layoutWidget.setObjectName("layoutWidget")
+        self.setWindowIcon(QtGui.QIcon("./src/Weather.png"))
         self.verticalLayout = QtWidgets.QVBoxLayout(self.layoutWidget)
         self.verticalLayout.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout.setObjectName("verticalLayout")
@@ -294,115 +400,304 @@ class Ui_Form(object):
         self.lineEdit.setObjectName("lineEdit")
         self.horizontalLayout.addWidget(self.lineEdit)
         self.verticalLayout.addLayout(self.horizontalLayout)
-        self.layoutWidget1 = QtWidgets.QWidget(Form)
-        self.layoutWidget1.setGeometry(QtCore.QRect(210, 70, 301, 61))
-        self.layoutWidget1.setObjectName("layoutWidget1")
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.layoutWidget1)
-        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.pushButton = QtWidgets.QPushButton(self.layoutWidget1)
+        self.label_114 = QtWidgets.QLabel(Form)
+        self.label_114.setAlignment(Qt.AlignCenter)
+        self.label_114.setGeometry(QtCore.QRect(200, 400, 160, 30))
+        self.label_114.setMinimumSize(QtCore.QSize(160, 30))
+        self.label_114.setText("")
+        self.label_114.setObjectName("label_114")
+        self.verticalLayoutWidget = QtWidgets.QWidget(Form)
+        self.verticalLayoutWidget.setGeometry(QtCore.QRect(380, 70, 160, 301))
+        self.verticalLayoutWidget.setObjectName("verticalLayoutWidget")
+        self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
+        self.verticalLayout_2.setObjectName("verticalLayout_2")
+        self.pushButton = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton.setEnabled(True)
         font = QtGui.QFont()
         font.setFamily("荆南麦圆体")
         self.pushButton.setFont(font)
         self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout_2.addWidget(self.pushButton)
-        self.pushButton_3 = QtWidgets.QPushButton(self.layoutWidget1)
+        self.verticalLayout_2.addWidget(self.pushButton)
+        self.pushButton_3 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         self.pushButton_3.setObjectName("pushButton_3")
-        self.horizontalLayout_2.addWidget(self.pushButton_3)
-        self.pushButton_2 = QtWidgets.QPushButton(self.layoutWidget1)
+        self.verticalLayout_2.addWidget(self.pushButton_3)
+        self.pushButton_5 = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.pushButton_5.setObjectName("pushButton_5")
+        self.verticalLayout_2.addWidget(self.pushButton_5)
+        self.pushButton_5.clicked.connect(Form.getWeather_now)
+        self.pushButton_4 = QtWidgets.QPushButton(self.verticalLayoutWidget)
+        self.pushButton_4.setObjectName("pushButton_4")
+        self.pushButton_4.clicked.connect(Form.openHelp)  # type: ignore
+        self.verticalLayout_2.addWidget(self.pushButton_4)
+        self.pushButton_2 = QtWidgets.QPushButton(self.verticalLayoutWidget)
         font = QtGui.QFont()
         font.setFamily("荆南麦圆体")
         self.pushButton_2.setFont(font)
         self.pushButton_2.setObjectName("pushButton_2")
-        self.horizontalLayout_2.addWidget(self.pushButton_2)
-        self.label_3 = QtWidgets.QLabel(Form)
-        self.label_3.setGeometry(QtCore.QRect(210, 400, 160, 61))
-        self.label_3.setMinimumSize(QtCore.QSize(160, 30))
-        self.label_3.setAlignment(QtCore.Qt.AlignCenter)
-        self.label_3.setObjectName("label_3")
-        Form.setWindowIcon(QtGui.QIcon("Weather.png"))
+        self.verticalLayout_2.addWidget(self.pushButton_2)
+        self.calendarWidget = QtWidgets.QCalendarWidget(Form)
+        self.calendarWidget.setGeometry(QtCore.QRect(50, 150, 301, 221))
+        self.calendarWidget.setObjectName("calendarWidget")
+        self.calendarWidget.setMinimumDate(
+            QtCore.QDate(
+                QtCore.QDate.currentDate().year(),
+                QtCore.QDate.currentDate().month(),
+                QtCore.QDate.currentDate().day(),
+            )
+        )
+        self.calendarWidget.setMaximumDate(
+            QtCore.QDate(QtCore.QDate(QtCore.QDate.currentDate().addDays(6)))
+        )
         self.retranslateUi(Form)
         self.pushButton_2.clicked.connect(Form.close)  # type: ignore
         self.pushButton.clicked.connect(Form.getWeather_1)  # type: ignore
+        self.pushButton_3.clicked.connect(Form.getWeather_5)  # type: ignore
         QtCore.QMetaObject.connectSlotsByName(Form)
-        self.pushButton_3.clicked.connect(Form.getWeather_5)
 
     def retranslateUi(self, Form):
-        """
-        Translates the text of the UI elements in the weather application.
-
-        Args:
-            Form: The form widget.
-
-        Returns:
-            None
-        """
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "天气查询"))
+        Form.setWindowTitle(_translate("Form", "今日天气"))
         self.label.setText(_translate("Form", "天气查询"))
         self.label_2.setText(_translate("Form", "城市"))
-        self.pushButton.setText(_translate("Form", "查询当日天气"))
-        self.pushButton_3.setText(_translate("Form", "查询五日天气"))
+        self.pushButton.setText(_translate("Form", "查询选中日天气"))
+        self.pushButton_3.setText(_translate("Form", "查询后五日天气"))
+        self.pushButton_4.setText(_translate("Form", "帮助"))
         self.pushButton_2.setText(_translate("Form", "退出"))
-        self.label_3.setText(
-            _translate(
-                "Form",
-                "请先输入城市再查询\n"
-                "按回车或单击按钮查询\n"
-                "按R键打开设置文件\n"
-                "按I键显示此页面",
-            )
-        )
+        self.pushButton_5.setText(_translate("Form", "查询当前天气"))
 
 
-class AnotherWindow(QWidget):
+class FiveDays(QWidget):
     """
     This "window" is a QWidget. If it has no parent, it
     will appear as a free-floating window as we want.
     """
 
-    def __init__(self, city):
+    def __init__(self, city, infos):
         """
-            Initialize the AnotherWindow object.
+        Initialize the AnotherWindow object.
 
-            Args:
-                city: The name of the city for which the weather information is displayed.
+        Args:
+            city: The name of the city for which the weather information is displayed.
 
-            Returns:
-                None
+        Returns:
+            None
         """
         super().__init__()
         layout = QtWidgets.QHBoxLayout()
+        layout1 = QtWidgets.QHBoxLayout()
+        layout.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        layout1.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout1)
+        widget1 = QtWidgets.QWidget()
+        widget1.setLayout(layout)
+        layout2 = QtWidgets.QVBoxLayout()
+        layout2.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        layout2.addWidget(widget1)
+        layout2.addWidget(widget)
         self.setWindowTitle(f"五日天气 - {city}市")
-        self.setLayout(layout)
-        self.setFixedSize(1000, 400)
-        self.resize(1000, 400)
-        self.setWindowIcon(QtGui.QIcon("Weather.png"))
+        self.setLayout(layout2)
+        self.setFixedSize(960, 480)
+        self.resize(960, 480)
+        self.setWindowIcon(QtGui.QIcon("./src/Weather.png"))
         font = QtGui.QFont()
         font.setPointSize(12)
         font.setFamily("荆南麦圆体")
         self.setFont(font)
         self.label = QtWidgets.QLabel()
+
         layout.addWidget(self.label)
-        self.label.setText(info[0])
+        self.label.setText(infos[0])
         self.label.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
         self.label1 = QtWidgets.QLabel()
         layout.addWidget(self.label1)
-        self.label1.setText(info[1])
+        self.label1.setText(infos[1])
         self.label1.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
         self.label2 = QtWidgets.QLabel()
         layout.addWidget(self.label2)
-        self.label2.setText(info[2])
+        self.label2.setText(infos[2])
         self.label2.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
         self.label3 = QtWidgets.QLabel()
         layout.addWidget(self.label3)
-        self.label3.setText(info[3])
+        self.label3.setText(infos[3])
         self.label3.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
         self.label4 = QtWidgets.QLabel()
         layout.addWidget(self.label4)
-        self.label4.setText(info[4])
+        self.label4.setText(infos[4])
         self.label4.setAlignment(QtCore.Qt.AlignLeft | Qt.AlignVCenter)
+        self.pushButton = QtWidgets.QPushButton()
+        self.pushButton.setFixedSize(160, 40)
+        self.pushButton.setText("复制")
+        layout1.addWidget(self.pushButton)
+        self.pushButton.clicked.connect(
+            lambda: copy(
+                self, str("".join([f"{str(x)}\n" for x in infos]).replace(" ", ""))
+            )
+        )
+
+
+class OneDay(QWidget):
+    """
+    This "window" is a QWidget. If it has no parent, it
+    will appear as a free-floating window as we want.
+    """
+
+    def __init__(self, city: str, dated: str, index: str) -> None:
+        """
+        Initialize the AnotherWindow object.
+
+        Args:
+            city: The name of the city for which the weather information is displayed.
+
+        Returns:
+            None
+        """
+        super().__init__()
+        layout = QtWidgets.QVBoxLayout()
+        layout1 = QtWidgets.QVBoxLayout()
+        self.setWindowTitle(f"{dated} - 天气 - {city}市")
+        self.setLayout(layout)
+        self.setFixedSize(700, 400)
+        self.resize(700, 400)
+        self.setWindowIcon(QtGui.QIcon("./src/Weather.png"))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setFamily("荆南麦圆体")
+        self.setFont(font)
+
+        self.label = QtWidgets.QTextEdit()
+        self.label.setReadOnly(True)
+        layout.setGeometry(QtCore.QRect(150, 60, 400, 280))
+
+        weather_json = index
+        self.label.setText(weather_json)
+        self.pushButton = QtWidgets.QPushButton()
+        self.pushButton.setFixedSize(160, 40)
+        self.pushButton.setText("复制")
+        self.label.setFixedSize(int(self.width() * 2 / 3), 280)
+        self.label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.pushButton.clicked.connect(
+            lambda: copy(self, str(weather_json).replace(" ", ""))
+        )
+        widget1 = QtWidgets.QWidget()
+        widget = QtWidgets.QWidget()
+        layout.addWidget(widget)
+        layout.addWidget(widget1)
+        widget.setLayout(layout1)
+        layout2 = QtWidgets.QVBoxLayout()
+        widget1.setLayout(layout2)
+        layout1.addWidget(self.label)
+        layout2.addWidget(self.pushButton)
+        layout2.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        layout1.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        layout.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+
+
+class Now(QWidget):
+    """
+    This "window" is a QWidget. If it has no parent, it
+    will appear as a free-floating window as we want.
+    """
+
+    def __init__(self, city: str, index: str) -> None:
+        """
+        Initialize the AnotherWindow object.
+
+        Args:
+            city: The name of the city for which the weather information is displayed.
+
+        Returns:
+            None
+        """
+        super().__init__()
+        layout = QtWidgets.QVBoxLayout()
+        layout1 = QtWidgets.QVBoxLayout()
+        self.setWindowTitle(f"实时天气 - {city}市")
+        self.setLayout(layout)
+        self.setFixedSize(700, 400)
+        self.resize(700, 400)
+        self.setWindowIcon(QtGui.QIcon("./src/Weather.png"))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setFamily("荆南麦圆体")
+        self.setFont(font)
+        self.label = QtWidgets.QTextEdit()
+        self.label.setReadOnly(True)
+        layout.setGeometry(QtCore.QRect(150, 60, 400, 280))
+        weather_json = index
+        self.label.setText(weather_json)
+        self.pushButton = QtWidgets.QPushButton()
+        self.pushButton.setFixedSize(160, 40)
+        self.pushButton.setText("复制")
+        self.label.setFixedSize(int(self.width() * 2 / 3), 280)
+        self.label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        self.pushButton.clicked.connect(
+            lambda: copy(self, str(weather_json).replace(" ", ""))
+        )
+        widget1 = QtWidgets.QWidget()
+        widget = QtWidgets.QWidget()
+        layout.addWidget(widget)
+        layout.addWidget(widget1)
+        widget.setLayout(layout1)
+        layout2 = QtWidgets.QVBoxLayout()
+        widget1.setLayout(layout2)
+        layout1.addWidget(self.label)
+        layout2.addWidget(self.pushButton)
+        layout2.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        layout1.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        layout.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+
+
+class Helps(QWidget):
+    """
+    This "window" is a QWidget. If it has no parent, it
+    will appear as a free-floating window as we want.
+    """
+
+    def __init__(self):
+        """
+        Initialize the AnotherWindow object.
+
+        Args:
+
+
+        Returns:
+            None
+        """
+        super().__init__()
+        layout = QtWidgets.QGridLayout()
+        self.setWindowTitle(f"帮助")
+        self.setLayout(layout)
+        self.setFixedSize(600, 400)
+        self.resize(600, 400)
+        self.setWindowIcon(QtGui.QIcon("./src/Weather.png"))
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setFamily("荆南麦圆体")
+        self.setFont(font)
+        self.label = QtWidgets.QLabel()
+        self.label.setAlignment(QtCore.Qt.AlignCenter | Qt.AlignVCenter)
+
+        layout.addWidget(self.label)
+        self.label.setText(
+            "请先输入城市再查询\n按按钮查询天气\n按回车查询单日天气\n按ESC键最小化窗口"
+        )
+
+        self.pushButton_5 = QtWidgets.QPushButton()
+        self.pushButton_5.setFixedSize(160, 60)
+        layout.addWidget(self.pushButton_5)
+        self.pushButton_5.setText("前往Github")
+        self.pushButton_5.clicked.connect(
+            lambda: URL("https://github.com/Chen-Junren/Python-Weather")
+        )
+
+        self.pushButton_6 = QtWidgets.QPushButton()
+        self.pushButton_6.setFixedSize(160, 60)
+        layout.addWidget(self.pushButton_6)
+        self.pushButton_6.setText("打开设置文件")
+        self.pushButton_6.clicked.connect(lambda: Open("./src/settings.txt"))
 
 
 class Weather(QWidget, Ui_Form):
@@ -414,9 +709,9 @@ class Weather(QWidget, Ui_Form):
 
     Attributes:
         table: A dictionary containing city codes.
-        textEdit: A QTextEdit widget for displaying weather information.
+
         lineEdit: A QLineEdit widget for entering the city name.
-        label_3: A QLabel widget for displaying status messages.
+        label_114: A QLabel widget for displaying status messages.
 
     Methods:
         __init__: Initializes the weather application.
@@ -431,6 +726,30 @@ class Weather(QWidget, Ui_Form):
         self.setupUi(self)
         self.InitializeUi()
         self.setFixedSize(600, 500)
+        checkTime = read_settings().get("CheckTime")
+        if checkTime:
+            a = QtWidgets.QMessageBox.question(
+                self,
+                "使用说明",
+                """该弹窗仅会显示一次:
+程序需要依赖正确的时间运行，
+您可点击下方按钮选择是否同步时间(会结束该进程)
+您可通过src目录下Time.bat(以管理员身份运行)同步时间
+请等待其执行完后再使用程序!
+您是否要同步时间？""",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+                QtWidgets.QMessageBox.Yes,
+            )
+            logging.info("显示弹窗")
+            setting = read_settings("./src/settings.txt")
+            setting["CheckTime"] = 0
+            print(setting)
+            with open("./src/settings.txt", "w") as f:
+                f.write(str(setting).replace("'", '"'))
+            if a == QtWidgets.QMessageBox.Yes:
+                os.system("start /wait .\\src\\Time.bat")
+                logging.info("同步时间")
+                os.system(f"taskkill /F /pid {os.getpid()}")
 
     def InitializeUi(self):
         """
@@ -441,12 +760,19 @@ class Weather(QWidget, Ui_Form):
 
         """
         self.table = read_code()
-        self.textEdit.setReadOnly(True)
         self.lineEdit.setFocus()
 
-    def getWeather_1(self):
+    def openHelp(self):
         """
-        Retrieves weather information based on the user's input.
+        Open the Help window
+        :return:
+        """
+        self.helps = Helps()
+        self.helps.show()
+
+    def getWeather_now(self):
+        """
+        Retrieves weather information of the present.
 
         Returns:
             None
@@ -460,20 +786,16 @@ class Weather(QWidget, Ui_Form):
         except KeyError:
             logging.warning(f"输入错误：{city}")
             err_msg = "输入错误"
-        # logging.info(citycode)
-        # logging.info(f"错误：{city}")
-        self.label_3.setText("正在查询中...")
+        self.label_114.setText("正在查询中...")
         if not err_msg:
-            # logging.info("Not ERROR MESSAGE")
             try:
-                # logging.info(2)
-                info = get_weather_1(city, citycode)
-                if info == "KeyERR":
+                infos = get_weather_now(citycode)
+                if infos == "KeyERR":
                     err_msg = "设置错误"
                     logging.warning(
                         f"设置错误：请检查Key:[{read_settings()['key']}]是否正确"
                     )
-                logging.info(f"查询:{city}-{citycode}\n[{info}]")
+                logging.info(f"查询:{city}-{citycode}\n[{infos}]")
                 logging.info(f"当前设置:{read_settings()}")
             except requests.ConnectionError:
                 err_msg = "网络错误"
@@ -483,6 +805,59 @@ class Weather(QWidget, Ui_Form):
                 logging.warning(f"输入错误 JSONDecodeError:{city} 请检查输入")
             except KeyError:
                 err_msg = "输入错误"
+                print(repr(traceback.print_exc()))
+                logging.warning(f"输入错误 KeyError:{city} 请检查输入")
+            except Exception as e:
+                err_msg = "未知错误"
+                logging.warning(repr(e))
+        self.lineEdit.setFocus()
+        if not err_msg:
+            self.now = Now(city, infos)
+            self.now.show()
+            self.label_114.setText("查询成功")
+            self.label_114.setText("查询成功")
+        else:
+            self.label_114.setText(f"查询失败 {err_msg}")
+
+        self.lineEdit.clear()
+
+    def getWeather_1(self):
+        """
+        Retrieves weather information based on the user's input.
+
+        Returns:
+            None
+
+        """
+        city = self.lineEdit.text()
+        dated = self.calendarWidget.selectedDate()
+        err_msg = ""
+        logging.info(f"输入：{city}")
+        try:
+            citycode = get_code(self.table, city)
+        except KeyError:
+            logging.warning(f"输入错误：{city}")
+            err_msg = "输入错误"
+        self.label_114.setText("正在查询中...")
+        if not err_msg:
+            try:
+                infos = get_weather_1(city, citycode, dated)
+                if infos == "KeyERR":
+                    err_msg = "设置错误"
+                    logging.warning(
+                        f"设置错误：请检查Key:[{read_settings()['key']}]是否正确"
+                    )
+                logging.info(f"查询:{city}-{citycode}\n[{infos}]")
+                logging.info(f"当前设置:{read_settings()}")
+            except requests.ConnectionError:
+                err_msg = "网络错误"
+                logging.warning(f"网络错误:{city} 请检查网络连接")
+            except JSONDecodeError:
+                err_msg = "输入错误"
+                logging.warning(f"输入错误 JSONDecodeError:{city} 请检查输入")
+            except KeyError:
+                err_msg = "输入错误"
+                print(repr(traceback.print_exc()))
                 logging.warning(f"输入错误 KeyError:{city} 请检查输入")
             except Exception as e:
                 err_msg = "未知错误"
@@ -490,55 +865,54 @@ class Weather(QWidget, Ui_Form):
 
         self.lineEdit.setFocus()
         if not err_msg:
-            self.textEdit.setText(info)
-            self.label_3.setText("查询成功")
+            self.one = OneDay(city, infos[1], infos[0])
+            self.one.show()
+            self.label_114.setText("查询成功")
+            self.label_114.setText("查询成功")
         else:
-            self.label_3.setText(f"查询失败 {err_msg}")
-            self.textEdit.setText("")
+            self.label_114.setText(f"查询失败 {err_msg}")
 
         self.lineEdit.clear()
 
     def getWeather_5(self):
         """
-            Perform a weather query based on user input.
+        Perform a weather query based on user input.
 
-            Returns:
-                None
+        Returns:
+            None
 
-            Raises:
-                KeyError: If there is an error with the user input.
-                requests.ConnectionError: If there is a network error.
-                JSONDecodeError: If there is an error decoding the JSON response.
-                Exception: If there is an unknown error.
+        Raises:
+            KeyError: If there is an error with the user input.
+            requests.ConnectionError: If there is a network error.
+            JSONDecodeError: If there is an error decoding the JSON response.
+            Exception: If there is an unknown error.
 
-            Examples:
-                This function is typically called when the user wants to query the weather.
-                It retrieves the user input, performs a weather query, and displays the result.
+        Examples:
+            This function is typically called when the user wants to query the weather.
+            It retrieves the user input, performs a weather query, and displays the result.
         """
         city = self.lineEdit.text()
         err_msg = ""
         logging.info(f"输入：{city}")
         try:
             citycode = get_code(self.table, city)
-            # print(citycode, city)
         except KeyError:
             logging.warning(f"输入错误：{city}")
             err_msg = "输入错误"
         except Exception as e:
             logging.error(repr(e))
             err_msg = "未知错误"
-        self.label_3.setText("正在查询中...")
+        self.label_114.setText("正在查询中...")
         if not err_msg:
             try:
-                global info
                 logging.info(f"查询：{city}-{citycode}")
-                info = get_weather_5(citycode)
-                if info == "KeyERR":
+                FiveD = get_weather_5(citycode)
+                if FiveD == "KeyERR":
                     err_msg = "设置错误"
                     logging.warning(
                         f"设置错误：请检查Key:[{read_settings()['key']}]是否正确"
                     )
-                logging.info(f"查询:{city}-{citycode}\n[{info}]")
+                logging.info(f"查询:{city}-{citycode}\n[{FiveD}]")
                 logging.info(f"当前设置:{read_settings()}")
             except requests.ConnectionError:
                 err_msg = "网络错误"
@@ -555,14 +929,11 @@ class Weather(QWidget, Ui_Form):
                 self.lineEdit.setText(repr(e))
         self.lineEdit.setFocus()
         if not err_msg:
-            self.w = AnotherWindow(city)
+            self.w = FiveDays(city, infos=FiveD)
             self.w.show()
-            # self.textEdit.setText()
-            self.label_3.setText("查询成功")
+            self.label_114.setText("查询成功")
         else:
-            self.label_3.setText(f"查询失败 {err_msg}")
-            self.textEdit.setText("")
-
+            self.label_114.setText(f"查询失败 {err_msg}")
         self.lineEdit.clear()
 
     def keyPressEvent(self, e):
@@ -576,23 +947,19 @@ class Weather(QWidget, Ui_Form):
             None
 
         """
-        if e.key() == Qt.Key_Return:
+        if e.key() == Qt.Key_Enter:
             self.getWeather_1()
-        if e.key() == Qt.Key_R:
-            self.label_3.setText("打开设置文件")
-            os.system(".\\settings.txt")
-            logging.info("打开设置文件")
-        if e.key() == Qt.Key_I:
-            self.label_3.setText(
-                "请先输入城市再查询\n按回车或单击按钮查询\n按R键打开设置文件\n按I键显示此页面"
-            )
-            logging.info("显示帮助")
+        if e.key() == Qt.Key_Escape:
+            self.showMinimized()
 
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    main = Weather()
-    logging.info("初始化成功")
-    logging.info(f"读取设置:{read_settings()}")
-    main.show()
-    sys.exit(app.exec_())
+    try:
+        app = QApplication(sys.argv)
+        main = Weather()
+        logging.info("初始化成功")
+        logging.info(f"读取设置:{read_settings()}")
+        main.show()
+        sys.exit(app.exec_())
+    except Exception as e:
+        logging.error(repr(e))
