@@ -21,28 +21,12 @@
   <property name="windowTitle">
    <string>今日天气</string>
   </property>
-  <widget class="QTextEdit" name="textEdit">
-   <property name="geometry">
-    <rect>
-     <x>125</x>
-     <y>140</y>
-     <width>330</width>
-     <height>231</height>
-    </rect>
-   </property>
-   <property name="font">
-    <font>
-     <family>荆南麦圆体</family>
-     <pointsize>10</pointsize>
-    </font>
-   </property>
-  </widget>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>130</x>
+     <x>50</x>
      <y>70</y>
-     <width>122</width>
+     <width>301</width>
      <height>62</height>
     </rect>
    </property>
@@ -91,16 +75,35 @@
     </item>
    </layout>
   </widget>
-  <widget class="QWidget" name="layoutWidget">
+  <widget class="QLabel" name="label_3">
    <property name="geometry">
     <rect>
-     <x>260</x>
-     <y>70</y>
-     <width>195</width>
-     <height>61</height>
+     <x>380</x>
+     <y>300</y>
+     <width>160</width>
+     <height>30</height>
     </rect>
    </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <property name="minimumSize">
+    <size>
+     <width>160</width>
+     <height>30</height>
+    </size>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>380</x>
+     <y>70</y>
+     <width>160</width>
+     <height>301</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayout_2">
     <item>
      <widget class="QPushButton" name="pushButton">
       <property name="enabled">
@@ -112,7 +115,21 @@
        </font>
       </property>
       <property name="text">
-       <string>查询</string>
+       <string>查询选中日天气</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_3">
+      <property name="text">
+       <string>查询后五日天气</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QPushButton" name="pushButton_4">
+      <property name="text">
+       <string>帮助</string>
       </property>
      </widget>
     </item>
@@ -130,23 +147,14 @@
     </item>
    </layout>
   </widget>
-  <widget class="QLabel" name="label_3">
+  <widget class="QCalendarWidget" name="calendarWidget">
    <property name="geometry">
     <rect>
-     <x>210</x>
-     <y>400</y>
-     <width>160</width>
-     <height>30</height>
+     <x>50</x>
+     <y>150</y>
+     <width>301</width>
+     <height>221</height>
     </rect>
-   </property>
-   <property name="minimumSize">
-    <size>
-     <width>160</width>
-     <height>30</height>
-    </size>
-   </property>
-   <property name="text">
-    <string/>
    </property>
   </widget>
  </widget>
