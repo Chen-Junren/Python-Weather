@@ -22,7 +22,6 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QApplication
 
-
 if not os.path.exists("./log"):
     os.mkdir("log")
 current_date = (
@@ -537,6 +536,20 @@ class FiveDays(QWidget):
             )
         )
 
+    def keyPressEvent(self, e):
+        """
+        Handles key press events in the weather application.
+
+        Args:
+            e: The key event object.
+
+        Returns:
+            None
+
+        """
+        if e.key() == Qt.Key_Escape:
+            self.showMinimized()
+
 
 class OneDay(QWidget):
     """
@@ -593,6 +606,20 @@ class OneDay(QWidget):
         layout2.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         layout1.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         layout.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+
+    def keyPressEvent(self, e):
+        """
+        Handles key press events in the weather application.
+
+        Args:
+            e: The key event object.
+
+        Returns:
+            None
+
+        """
+        if e.key() == Qt.Key_Escape:
+            self.showMinimized()
 
 
 class Now(QWidget):
@@ -699,6 +726,20 @@ class Helps(QWidget):
         self.pushButton_6.setText("打开设置文件")
         self.pushButton_6.clicked.connect(lambda: Open("./src/settings.txt"))
 
+    def keyPressEvent(self, e):
+        """
+        Handles key press events in the weather application.
+
+        Args:
+            e: The key event object.
+
+        Returns:
+            None
+
+        """
+        if e.key() == Qt.Key_Escape:
+            self.showMinimized()
+
 
 class Weather(QWidget, Ui_Form):
     """
@@ -734,7 +775,8 @@ class Weather(QWidget, Ui_Form):
                 """该弹窗仅会显示一次:
 程序需要依赖正确的时间运行，
 您可点击下方按钮选择是否同步时间(会结束该进程)
-您可通过src目录下Time.bat(以管理员身份运行)同步时间
+您可通过src目录下UpdateTime.exe同步时间
+该exe需要管理员身份
 请等待其执行完后再使用程序!
 您是否要同步时间？""",
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
@@ -747,7 +789,7 @@ class Weather(QWidget, Ui_Form):
             with open("./src/settings.txt", "w") as f:
                 f.write(str(setting).replace("'", '"'))
             if a == QtWidgets.QMessageBox.Yes:
-                os.system("start /wait .\\src\\Time.bat")
+                os.system("start /wait .\\src\\UpdateTime.exe")
                 logging.info("同步时间")
                 os.system(f"taskkill /F /pid {os.getpid()}")
 
