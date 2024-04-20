@@ -21,7 +21,12 @@ import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QApplication
+import locale
+import warnings as wr
 
+
+wr.filterwarnings("ignore")
+locale.setlocale(locale.LC_ALL, "chinese")
 if not os.path.exists("./log"):
     os.mkdir("log")
 current_date = (
@@ -34,7 +39,6 @@ logging.basicConfig(
     filemode="a",
     format="%(asctime)s - %(name)s - %(levelname)-9s - %(filename)-8s : %(lineno)s line - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    encoding="utf-8",
 )
 
 
