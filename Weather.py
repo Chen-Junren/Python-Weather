@@ -25,6 +25,7 @@ import locale
 import warnings as wr
 
 
+_print = print
 wr.filterwarnings("ignore")
 locale.setlocale(locale.LC_ALL, "chinese")
 if not os.path.exists("./log"):
@@ -40,6 +41,19 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)-9s - %(filename)-8s : %(lineno)s line - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+
+
+def print(*args: any, **kwargs: any) -> any:
+    """
+    Print only if DEBUG is True.
+    :param args: argument
+    :param kwargs: arguments
+    :return: print
+    """
+    debug = read_settings()['debug']
+    if debug:
+        _print(*args, **kwargs)
+    return print
 
 
 def read_settings(filename="./src/settings.txt"):
