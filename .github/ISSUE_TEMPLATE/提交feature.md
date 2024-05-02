@@ -2,8 +2,8 @@
 name: 提交Feature
 about: 为这个项目提交一些想法
 title: "[Features]"
-labels: ''
-assignees: ''
+labels: enhancement
+assignees: Chen-Junren, cjr1030
 
 ---
 
