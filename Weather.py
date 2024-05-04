@@ -5,6 +5,7 @@ Copyright (C) 2024 Chen Junren, Inc. All Rights Reserved
 @Project : Weather
 @Product : Pycharm v2022.3.3
 @File    : Weather.py
+@Version : v3.1.4
 """
 
 import datetime
